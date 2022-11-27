@@ -1,0 +1,13 @@
+*.ipynb_checkpoints
+*pyc
+*.ckpt
+*/lightning_logs/*
+misc/*
+model/*
+!model/.gitkeep
+datasets/*
+!datasets/.gitkeep
+output/*
+!output/.gitkeep
+log/*
+E-GraphSAGE

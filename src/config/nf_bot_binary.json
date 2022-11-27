@@ -1,0 +1,29 @@
+{
+    // data
+    "root": "../datasets",
+    "ds_name": "NF-BoT-IoT_graph_binary",
+    "batch_size": 32768,
+    "num_workers": 0,
+    "num_neighbors": 30,
+    // model
+    "gcn_type": "GAT",
+    "in_channels": 8,
+    "edge_dim": 8,
+    "hidden_channels": 64,
+    "out_dim": 128,
+    "heads": 4,
+    "operator": "Concat",
+    "num_labels": 2,
+    "learning_rate": 0.001,
+    "dropout": 0.2,
+    "class_weight": "21-0.5",
+    // trainer
+    "seed": 2022,
+    "name": "nf_bot_binary",
+    "checkpoint_dir": "../model",
+    "top_k": 5,
+    "max_epochs": 100,
+    "metric": "val_acc",
+    "patience": 20,
+    "mode": "max"
+}
