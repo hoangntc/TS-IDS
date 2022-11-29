@@ -226,10 +226,14 @@ class TSIDS(pl.LightningModule):
         return logs
    
     def predict(self, data):
+        e_feature = data.edge_attr
         h2 = F.relu(self.gnn(data.x, data.edge_index, data.edge_attr))
-        h3 = self.link_mlp(h2, data.edge_label_index)
+        h3 = self.edge_encoder(h2, data.edge_label_index)
+        # print(e_feature.shape, h3.shape)
+        # h_e = torch.cat([e_feature, h3], axis=1)
+        # h4 = F.relu(self.lin0(h_e))
         h4 = F.relu(self.lin0(h3))
         h5 = F.relu(self.lin1(h4))
-        logits = self.classifier(h5)
-        probs = F.softmax(logits, 1)
+        logits_gnn = self.classifier(h5)
+        probs = F.softmax(logits_gnn, 1)
         return probs

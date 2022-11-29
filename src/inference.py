@@ -91,7 +91,7 @@ class InferenceAgent:
                 probabilities, labels = self.single_dataset_inference(loader)
                 preds += probabilities
                 gts += labels
-                tvts += [ds_name*len(preds)]
+                tvts += [ds_name]*len(labels)
         print(f'Total number of samples: {len(preds)}')
         self.output = {
             'preds': preds, 

@@ -64,6 +64,8 @@ Data preparation consists of three steps: split the data into train/val/test, ex
 
 To prepare data, check the notebook: `experiment/1_preprocess_data.ipynb`
 
+Raw data with the train/val/test indicator can be downloaded [here](https://drive.google.com/drive/folders/1xyXtGvf4DXbM4epIr9JApZgWjIxsAQho?usp=sharing)
+
 ### 3.2 Hyper-parameter tuning
 
 ```bash

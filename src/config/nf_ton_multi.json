@@ -21,9 +21,9 @@
     "seed": 2022,
     "name": "nf_ton_multi",
     "checkpoint_dir": "../model",
-    "top_k": 5,
-    "max_epochs": 100,
+    "top_k": 10,
+    "max_epochs": 1000,
     "metric": "val_acc",
-    "patience": 20,
+    "patience": 50,
     "mode": "max"
 }

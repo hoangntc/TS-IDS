@@ -11,3 +11,4 @@ output/*
 !output/.gitkeep
 log/*
 E-GraphSAGE
+checkpoint
