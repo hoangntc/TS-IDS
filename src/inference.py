@@ -32,6 +32,7 @@ class InferenceAgent:
                  model_module,
                  restore_model_dir='../model',
                  restore_model_name='.ckpt',
+                 save=True,
                  output_dir='../output',
                  output_fname='',
                  device='cuda:0',
@@ -40,6 +41,7 @@ class InferenceAgent:
         self.restore_model_name = restore_model_name
         self.output_dir = output_dir
         self.output_fname = output_fname
+        self.save = save
 
         # initial data/model
         seed_everything(config['seed'], workers=True)
@@ -106,10 +108,12 @@ class InferenceAgent:
             df.columns = [f'probs_{i}' for i in range(df.shape[1])]
             df['gts'] = self.output['gts']
             df['tvt'] = self.output['tvts']
+            self.out_df = df
             #
             if not os.path.exists(self.output_dir): os.mkdir(self.output_dir)
             if self.output_fname == '':
                 self.output_fname = os.path.basename(str(self.restore_model_name)).replace('.ckpt', '.csv')
             save_path = str(Path(self.output_dir) / self.output_fname)
             print(f'Save embeddings to: {save_path}')
-            df.to_csv(save_path, index=False)
+            if self.save:
+                df.to_csv(save_path, index=False)

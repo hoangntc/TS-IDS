@@ -9,6 +9,7 @@ datasets/*
 !datasets/.gitkeep
 output/*
 !output/.gitkeep
+output_cv
 log/*
 E-GraphSAGE
 checkpoint

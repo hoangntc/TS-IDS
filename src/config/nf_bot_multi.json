@@ -21,7 +21,7 @@
     "seed": 2022,
     "name": "nf_bot_multi",
     "checkpoint_dir": "../model",
-    "top_k": 10,
+    "top_k": 20,
     "max_epochs": 1000,
     "metric": "val_acc",
     "patience": 50,
