@@ -6,5 +6,5 @@ conda activate iot
 
 python ../src/main.py --name nf_bot_binary
 python ../src/main.py --name nf_bot_multi
-python ../src/main.py --name nf_ton_binary
-python ../src/main.py --name nf_ton_multi
+# python ../src/main.py --name nf_ton_binary
+# python ../src/main.py --name nf_ton_multi

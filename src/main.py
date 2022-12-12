@@ -51,7 +51,7 @@ config = utils.read_json(config_path)
 n_folds = 5
 for fold in range(n_folds):
     config_dict = copy.deepcopy(config)
-    config_dict['max_epochs'] = 5
+    config_dict['max_epochs'] = 100
     config_dict['ds_name'] = cfname2dsname[name].format(fold)
     config_dict['name'] = config_dict['name'] + '_cv{}'.format(fold)
     tsids = TSIDSPipeline(config_dict=config_dict)

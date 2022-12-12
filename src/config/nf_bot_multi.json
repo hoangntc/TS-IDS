@@ -9,12 +9,12 @@
     "gcn_type": "GAT",
     "in_channels": 32,
     "edge_dim": 8,
-    "hidden_channels": 64,
+    "hidden_channels": 32,
     "out_dim": 128,
     "heads": 4,
     "operator": "Concat",
     "num_labels": 5,
-    "learning_rate": 0.001,
+    "learning_rate": 0.0001,
     "dropout": 0.2,
     "class_weight": "1-1-1-1-1",  // "8-2-2-0.25-62"
     // trainer
@@ -22,8 +22,8 @@
     "name": "nf_bot_multi",
     "checkpoint_dir": "../model",
     "top_k": 20,
-    "max_epochs": 1000,
+    "max_epochs": 100,
     "metric": "val_acc",
-    "patience": 50,
+    "patience": 20,
     "mode": "max"
 }
