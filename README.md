@@ -14,8 +14,12 @@
 |   |-- config
 |   |   nf_bot_binary.json
 |   |   nf_bot_multi.json
+|   |   nf_cse_binary.json
+|   |   nf_cse_multi.json
 |   |   nf_ton_binary.json
 |   |   nf_ton_multi.json
+|   |   nf_unsw_binary.json
+|   |   nf_unsw_multi.json
 |   dataset.py
 |   inference.py
 |   model.py
@@ -91,6 +95,7 @@ python ../src/predict.py --name nf_bot_binary --restore_model_dir restore_model_
 ## 4. Baselines
 - XGBoost: `experiment/3_baseline_XGB.ipynb`
 - EGraphSAGE: `experiment/3_baseline_EGraphSAGE.ipynb`
+- Anomal-E: `experiment/3_baseline_AnomalE.ipynb`
 
 ## 5. Evaluation
 For evaluation and visualization, run the notebook: `experiment/4_evaluation.ipynb`

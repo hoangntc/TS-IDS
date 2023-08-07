@@ -7,9 +7,9 @@ model/*
 !model/.gitkeep
 datasets/*
 !datasets/.gitkeep
-output/*
+output*/*
 !output/.gitkeep
-output_cv
+model*
 log/*
 E-GraphSAGE
-checkpoint
+tb_logs

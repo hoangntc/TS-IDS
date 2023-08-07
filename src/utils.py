@@ -21,36 +21,38 @@ def read_json(fname):
 
 def read_data(data_config, returned_dtype='tensor', verbose=True):
     assert returned_dtype in ['tensor', 'array']
-    g_data = pd.read_pickle(
-        os.path.join(data_config['root'], data_config['ds_name']+'.pkl'))
-    if returned_dtype == 'array':
-        x = g_data['n_features']
-        edge_index = g_data['edge_index']
-        edge_attr = g_data['e_features']
-        y = g_data['node_label']
-        input_train_edges = g_data['edge_index'][:, np.where(g_data['tvt']=='train')[0]]
-        input_val_edges = g_data['edge_index'][:, np.where(g_data['tvt']=='val')[0]]
-        input_test_edges = g_data['edge_index'][:, np.where(g_data['tvt']=='test')[0]]
-        input_train_labels = g_data['edge_label'][np.where(g_data['tvt']=='train')[0]]
-        input_val_labels = g_data['edge_label'][np.where(g_data['tvt']=='val')[0]]
-        input_test_labels = g_data['edge_label'][np.where(g_data['tvt']=='test')[0]]
-    else:
-        x = torch.tensor(g_data['n_features'], dtype=torch.float)
-        edge_index = torch.tensor(g_data['edge_index'], dtype=torch.long)
-        edge_attr = torch.tensor(g_data['e_features'], dtype=torch.float)
-        y = torch.tensor(g_data['node_label'], dtype=torch.long)
-        input_train_edges = torch.tensor(
-            g_data['edge_index'][:, np.where(g_data['tvt']=='train')[0]], dtype=torch.long)
-        input_val_edges = torch.tensor(
-            g_data['edge_index'][:, np.where(g_data['tvt']=='val')[0]], dtype=torch.long)
-        input_test_edges = torch.tensor(
-            g_data['edge_index'][:, np.where(g_data['tvt']=='test')[0]], dtype=torch.long)
-        input_train_labels = torch.tensor(
-            g_data['edge_label'][np.where(g_data['tvt']=='train')[0]], dtype=torch.long)
-        input_val_labels = torch.tensor(
-            g_data['edge_label'][np.where(g_data['tvt']=='val')[0]], dtype=torch.long)
-        input_test_labels = torch.tensor(
-            g_data['edge_label'][np.where(g_data['tvt']=='test')[0]], dtype=torch.long)
+    fname = os.path.join(data_config['root'], data_config['ds_name']+'.pkl')
+    print(fname)
+    g_data = pd.read_pickle(fname)
+    x = g_data['n_features']
+    edge_index = g_data['edge_index']
+    edge_attr = g_data['e_features']
+    y = g_data['node_label']
+    input_train_edges = g_data['edge_index'][:, np.where(g_data['tvt']=='train')[0]]
+    input_val_edges = g_data['edge_index'][:, np.where(g_data['tvt']=='val')[0]]
+    input_test_edges = g_data['edge_index'][:, np.where(g_data['tvt']=='test')[0]]
+    
+    input_train_labels = g_data['edge_label'][np.where(g_data['tvt']=='train')[0]]
+    input_val_labels = g_data['edge_label'][np.where(g_data['tvt']=='val')[0]]
+    input_test_labels = g_data['edge_label'][np.where(g_data['tvt']=='test')[0]]
+    
+    input_train_edges_attr = g_data['e_features'][np.where(g_data['tvt']=='train')[0]]
+    input_val_edges_attr = g_data['e_features'][np.where(g_data['tvt']=='val')[0]]
+    input_test_edges_attr = g_data['e_features'][np.where(g_data['tvt']=='test')[0]]
+    if returned_dtype == 'tensor':
+        x = torch.tensor(x, dtype=torch.float)
+        edge_index = torch.tensor(edge_index, dtype=torch.long)
+        edge_attr = torch.tensor(edge_attr, dtype=torch.float)
+        y = torch.tensor(y, dtype=torch.long)
+        input_train_edges = torch.tensor(input_train_edges, dtype=torch.long)
+        input_val_edges = torch.tensor(input_val_edges, dtype=torch.long)
+        input_test_edges = torch.tensor(input_test_edges, dtype=torch.long)
+        input_train_labels = torch.tensor(input_train_labels, dtype=torch.long)
+        input_val_labels = torch.tensor(input_val_labels, dtype=torch.long)
+        input_test_labels = torch.tensor(input_test_labels, dtype=torch.long)
+        input_train_edges_attr = torch.tensor(input_train_edges_attr, dtype=torch.long)
+        input_val_edges_attr = torch.tensor(input_val_edges_attr, dtype=torch.long)
+        input_test_edges_attr = torch.tensor(input_test_edges_attr, dtype=torch.long)
     if verbose:
         print('x:', x.shape)
         print('edge_index:', edge_index.shape)
@@ -61,9 +63,8 @@ def read_data(data_config, returned_dtype='tensor', verbose=True):
         print('input_test_edges:', input_test_edges.shape)
         print('input_train_labels:', input_train_labels.shape)
         print('input_val_labels:', input_val_labels.shape)
-        print('input_test_labels:', input_test_labels.shape)
-        
-    return g_data, x, edge_index, edge_attr, y, input_train_edges, input_val_edges, input_test_edges, input_train_labels, input_val_labels, input_test_labels
+        print('input_test_labels:', input_test_labels.shape) 
+    return g_data, x, edge_index, edge_attr, y, input_train_edges, input_val_edges, input_test_edges, input_train_labels, input_val_labels, input_test_labels, input_train_edges_attr, input_val_edges_attr, input_test_edges_attr
 
 def calc_auc(logits, gts, num_labels, avg_type='macro', binary=False):
     if binary:
@@ -107,6 +108,6 @@ def calc_accuracy(logits, gts, binary=False):
 def calc_metrics(logits, gts, num_labels, binary=False):    
     acc = calc_accuracy(logits, gts, binary=binary)
     f1_macro = calc_f1(logits, gts, avg_type='macro', binary=binary)
-    f1_micro = calc_f1(logits, gts, avg_type='micro', binary=binary)
+    f1_weighted = calc_f1(logits, gts, avg_type='weighted', binary=binary)
 #     auc = calc_auc(logits, gts, num_labels=num_labels, avg_type=avg_type, binary=binary)
-    return acc, f1_macro, f1_micro
+    return acc, f1_macro, f1_weighted

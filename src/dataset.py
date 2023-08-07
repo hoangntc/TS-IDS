@@ -19,12 +19,12 @@ from pytorch_lightning.trainer.trainer import Trainer
 from pytorch_lightning.callbacks import ModelCheckpoint, EarlyStopping
 from pytorch_lightning.utilities.seed import seed_everything
 
-from torch_geometric.data import Data, LightningLinkData
+from torch_geometric.data import Data, HeteroData, LightningLinkData
 from torch_geometric.loader import DataLoader
 from utils import read_data
 
 def build_datamodule(data_config):
-    g_data, x, edge_index, edge_attr, y, input_train_edges, input_val_edges, input_test_edges, input_train_labels, input_val_labels, input_test_labels = read_data(data_config)
+    g_data, x, edge_index, edge_attr, y, input_train_edges, input_val_edges, input_test_edges, input_train_labels, input_val_labels, input_test_labels, input_train_edges_attr, input_val_edges_attr, input_test_edges_attr = read_data(data_config)
 #     g_data = pd.read_pickle(
 #         os.path.join(data_config['root'], data_config['ds_name']+'.pkl'))
 #     x = torch.tensor(g_data['n_features'], dtype=torch.float)
@@ -44,7 +44,12 @@ def build_datamodule(data_config):
         edge_attr=edge_attr,
         y=y,
     )
-
+    
+    # concat to reuse edge features in training
+    input_train_labels = torch.concat([input_train_labels.unsqueeze(1), input_train_edges_attr], axis=1)
+    input_val_labels = torch.concat([input_val_labels.unsqueeze(1), input_val_edges_attr], axis=1)
+    input_test_labels = torch.concat([input_test_labels.unsqueeze(1), input_test_edges_attr], axis=1)
+    
     data_module = LightningLinkData(
         data=data_full,
         num_neighbors=[data_config['num_neighbors']] * 2,

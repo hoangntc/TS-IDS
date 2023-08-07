@@ -66,9 +66,8 @@ class InferenceAgent:
         labels = []
         for batch in loader:
             batch.cuda(self.device)
-            probs = self.model_module.predict(batch)
-            y = batch.edge_label
-        
+            probs, y = self.model_module.predict(batch)
+            
             probs = probs.cpu().detach().numpy().tolist()
             y = y.cpu().detach().numpy().tolist()
             

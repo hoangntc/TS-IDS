@@ -102,17 +102,20 @@ class TSIDS(pl.LightningModule):
             self.hparams.edge_dim, 
             self.hparams.dropout,
         )
-        
+        if "ablation" in self.hparams and self.hparams.ablation:
+            self.run_ablation = True
+        else:
+            self.run_ablation = False
         ## edge_encoder
         self.edge_encoder = EdgeEncoder(operator=self.hparams.operator)
         n_hidden_dim = self.hparams.hidden_channels * self.hparams.heads
         ## Readout
         if self.hparams.operator == 'Concat':
-            # e_hidden_dim = self.hparams.edge_dim + n_hidden_dim * 2 
-            e_hidden_dim = n_hidden_dim * 2 
+            e_hidden_dim = self.hparams.edge_dim + n_hidden_dim * 2 
+#             e_hidden_dim = n_hidden_dim * 2 
         else:
-            # e_hidden_dim = self.hparams.edge_dim + n_hidden_dim
-            e_hidden_dim = n_hidden_dim
+            e_hidden_dim = self.hparams.edge_dim + n_hidden_dim
+#             e_hidden_dim = n_hidden_dim
         self.lin0 = Linear(e_hidden_dim, self.hparams.out_dim * 2)
         self.lin1 = Linear(self.hparams.out_dim * 2, self.hparams.out_dim)
         self.classifier = nn.Linear(self.hparams.out_dim, self.hparams.num_labels)
@@ -129,25 +132,29 @@ class TSIDS(pl.LightningModule):
         return optimizer  
     
     def forward(self, data):
-        e_feature = data.edge_attr
+        e_feature = data['edge_label'][:, 1:]
         h2 = F.relu(self.gnn(data.x, data.edge_index, data.edge_attr))
         h3 = self.edge_encoder(h2, data.edge_label_index)
-        # print(e_feature.shape, h3.shape)
-        # h_e = torch.cat([e_feature, h3], axis=1)
-        # h4 = F.relu(self.lin0(h_e))
-        h4 = F.relu(self.lin0(h3))
+        h_e = torch.cat([e_feature, h3], dim=1)
+        h4 = F.relu(self.lin0(h_e))
+#         h4 = F.relu(self.lin0(h3))
         h5 = F.relu(self.lin1(h4))
         logits_gnn = self.classifier(h5)
         logits_ssl = self.discriminator(h2).squeeze()
+#         print(e_feature.shape, h3.shape, logits_gnn.shape, data['edge_features'].shape)
         return logits_gnn, logits_ssl
         
     def training_step(self, batch, batch_idx):
         logits_gnn, logits_ssl = self.forward(batch)
-        e_labels = batch['edge_label'].long()
+        e_labels = batch['edge_label'][:, 0].long()
         n_labels = batch['y'].float()
         ce_loss = self.loss(logits_gnn, e_labels)        
         ssl_loss = self.loss_ssl(torch.sigmoid(logits_ssl), n_labels)
-        train_loss = ce_loss + ssl_loss
+        if self.run_ablation:
+            train_loss = ce_loss
+        else:
+            train_loss = ce_loss + ssl_loss
+            
         logs = {
             'train_loss': train_loss,
             'ce_loss': ce_loss,
@@ -159,18 +166,18 @@ class TSIDS(pl.LightningModule):
     
     def validation_step(self, batch, batch_idx):
         logits_gnn, logits_ssl = self.forward(batch)
-        e_labels = batch['edge_label'].long()
+        e_labels = batch['edge_label'][:, 0].long()
         n_labels = batch['y'].float()
         ce_loss = self.loss(logits_gnn, e_labels)        
         ssl_loss = self.loss_ssl(torch.sigmoid(logits_ssl), n_labels)
         total_loss = ce_loss + ssl_loss
-        acc, f1_macro, f1_micro = utils.calc_metrics(logits_gnn, e_labels, num_labels=self.hparams.num_labels)
+        acc, f1_macro, f1_weighted = utils.calc_metrics(logits_gnn, e_labels, num_labels=self.hparams.num_labels)
         logs = {
             'total_loss': total_loss,
             'ce_loss': ce_loss, 
             'acc': acc,
             'f1_macro': f1_macro,
-            'f1_micro': f1_micro,
+            'f1_weighted': f1_weighted,
             'batch_size': torch.tensor(batch.edge_label.shape[0], dtype=torch.float32),
         }
         self.log_dict(logs, prog_bar=True)
@@ -181,30 +188,30 @@ class TSIDS(pl.LightningModule):
         avg_ce_loss = torch.stack([x['ce_loss'] for x in val_step_outputs]).mean()
         avg_acc = torch.stack([x['acc'] for x in val_step_outputs]).mean()
         avg_f1_macro = torch.stack([x['f1_macro'] for x in val_step_outputs]).mean()
-        avg_f1_micro = torch.stack([x['f1_micro'] for x in val_step_outputs]).mean()
+        avg_f1_weighted = torch.stack([x['f1_weighted'] for x in val_step_outputs]).mean()
         logs = {
             'val_loss': avg_loss,
             'val_ce_loss': avg_ce_loss, 
             'val_acc': avg_acc,
             'val_macro_f1': avg_f1_macro,
-            'val_micro_f1': avg_f1_micro,
+            'val_weighted_f1': avg_f1_weighted,
         }
         self.log_dict(logs, prog_bar=True)
      
     def test_step(self, batch, batch_idx):
         logits_gnn, logits_ssl = self.forward(batch)
-        e_labels = batch['edge_label'].long()
+        e_labels = batch['edge_label'][:, 0].long()
         n_labels = batch['y'].float()
         ce_loss = self.loss(logits_gnn, e_labels)        
         ssl_loss = self.loss_ssl(torch.sigmoid(logits_ssl), n_labels)
         total_loss = ce_loss + ssl_loss
-        acc, f1_macro, f1_micro = utils.calc_metrics(logits_gnn, e_labels, num_labels=self.hparams.num_labels)
+        acc, f1_macro, f1_weighted = utils.calc_metrics(logits_gnn, e_labels, num_labels=self.hparams.num_labels)
         logs = {
             'total_loss': total_loss,
             'ce_loss': ce_loss, 
             'acc': acc,
             'f1_macro': f1_macro,
-            'f1_micro': f1_micro,
+            'f1_weighted': f1_weighted,
             'batch_size': torch.tensor(batch.edge_label.shape[0], dtype=torch.float32),
         }
         return logs
@@ -214,26 +221,19 @@ class TSIDS(pl.LightningModule):
         avg_ce_loss = torch.stack([x['ce_loss'] for x in test_step_outputs]).mean()
         avg_acc = torch.stack([x['acc'] for x in test_step_outputs]).mean()
         avg_f1_macro = torch.stack([x['f1_macro'] for x in val_step_outputs]).mean()
-        avg_f1_micro = torch.stack([x['f1_micro'] for x in val_step_outputs]).mean()
+        avg_f1_weighted = torch.stack([x['f1_weighted'] for x in val_step_outputs]).mean()
         logs = {
             'test_loss': avg_loss,
             'test_ce_loss': avg_ce_loss, 
             'test_acc': avg_acc,
             'test_macro_f1': avg_f1_macro,
-            'test_micro_f1': avg_f1_micro,
+            'test_weighted_f1': avg_f1_weighted,
         }
         self.log_dict(logs, prog_bar=True)
         return logs
    
     def predict(self, data):
-        e_feature = data.edge_attr
-        h2 = F.relu(self.gnn(data.x, data.edge_index, data.edge_attr))
-        h3 = self.edge_encoder(h2, data.edge_label_index)
-        # print(e_feature.shape, h3.shape)
-        # h_e = torch.cat([e_feature, h3], axis=1)
-        # h4 = F.relu(self.lin0(h_e))
-        h4 = F.relu(self.lin0(h3))
-        h5 = F.relu(self.lin1(h4))
-        logits_gnn = self.classifier(h5)
+        logits_gnn, logits_ssl = self.forward(data)
         probs = F.softmax(logits_gnn, 1)
-        return probs
+        y = data.edge_label[:, 0]
+        return probs, y

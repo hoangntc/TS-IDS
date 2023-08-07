@@ -37,10 +37,6 @@ name = args.name
 stage = args.stage
 n_folds = args.n_folds
 
-assert name in [
-    'nf_bot_multi', 'nf_bot_binary', 'nf_ton_multi', 'nf_ton_binary',
-    'nf_cse_multi', 'nf_cse_binary', 'nf_unsw_multi', 'nf_unsw_binary',
-], 'Not available dataset!'
 assert stage in ['fit', 'predict', 'all'], 'Not valid stage name!'
 
 print(f'######### Experiment: {name} #########')
@@ -50,10 +46,6 @@ cfname2dsname = {
     'nf_bot_binary': 'NF-BoT-IoT_cv{}_graph_binary',
     'nf_ton_multi': 'NF-ToN-IoT_cv{}_graph_multi',
     'nf_ton_binary': 'NF-ToN-IoT_cv{}_graph_binary',
-    'nf_cse_multi': 'NF-CSE-CIC-IDS2018-v2_cv{}_graph_multi',
-    'nf_cse_binary': 'NF-CSE-CIC-IDS2018-v2_cv{}_graph_binary',
-    'nf_unsw_multi': 'NF-UNSW-NB15-v2_cv{}_graph_multi',
-    'nf_unsw_binary': 'NF-UNSW-NB15-v2_cv{}_graph_binary',
 }
 # This is for training the data including:
 # 1. Initialize the main modules: data_module, model_module and trainer
@@ -64,9 +56,12 @@ config = utils.read_json(config_path)
 
 for fold in range(n_folds):
     config_dict = copy.deepcopy(config)
+    config_dict['max_epochs'] = 200
     config_dict['ds_name'] = cfname2dsname[name].format(fold)
-    config_dict['name'] = config_dict['name'] + '_cv{}'.format(fold)
+    config_dict['name'] = config_dict['name'] + '_cv{}_ablation'.format(fold)
+    config_dict['ablation'] = True
     tsids = TSIDSPipeline(config_dict=config_dict)
+    
     # 1. Initialize data, model, trainer
     data_module, model_module, trainer = tsids.initialize()
 
@@ -88,3 +83,5 @@ for fold in range(n_folds):
                 save=True,
                 output_dir ='../output_cv',
             )
+
+

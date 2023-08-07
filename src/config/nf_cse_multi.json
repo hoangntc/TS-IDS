@@ -1,29 +1,29 @@
 {
     // data
     "root": "../datasets",
-    "ds_name": "NF-BoT-IoT_graph_multi",
-    "batch_size": 32768,
+    "ds_name": "NF-CSE-CIC-IDS2018-v2_cv0_graph_multi",
+    "batch_size": 1048576,
     "num_workers": 0,
     "num_neighbors": 30,
     // model
     "gcn_type": "GAT",
-    "in_channels": 32,
-    "edge_dim": 8,
+    "in_channels": 112,
+    "edge_dim": 39,
     "hidden_channels": 32,
     "out_dim": 128,
     "heads": 4,
     "operator": "Concat",
-    "num_labels": 5,
-    "learning_rate": 0.0001,
+    "num_labels": 15,
+    "learning_rate": 0.001,
     "dropout": 0.2,
-    "class_weight": "1-1-1-1-1",  // "8-2-2-0.25-62"
+    "class_weight": "1-1-1-1-1-1-1-1-1-1-1-1-1-1-1",
     // trainer
     "seed": 2022,
-    "name": "nf_bot_multi",
+    "name": "nf_cse_multi",
     "checkpoint_dir": "../model",
-    "top_k": 20,
-    "max_epochs": 500,
+    "top_k": 10,
+    "max_epochs": 100,
     "metric": "val_acc",
-    "patience": 20,
+    "patience": 10,
     "mode": "max"
 }

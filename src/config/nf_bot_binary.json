@@ -22,7 +22,7 @@
     "name": "nf_bot_binary",
     "checkpoint_dir": "../model",
     "top_k": 20,
-    "max_epochs": 100,
+    "max_epochs": 500,
     "metric": "val_acc",
     "patience": 20,
     "mode": "max"

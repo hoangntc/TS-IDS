@@ -22,7 +22,7 @@
     "name": "nf_ton_multi",
     "checkpoint_dir": "../model",
     "top_k": 20,
-    "max_epochs": 1000,
+    "max_epochs": 500,
     "metric": "val_acc",
     "patience": 50,
     "mode": "max"
